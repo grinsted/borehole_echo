@@ -12,8 +12,7 @@ from PyQt5.QtGui import QIcon, QImage, QPixmap, QFont
 from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QWidget, QMainWindow
 import playrec_worker
 import pyqtgraph as pg
-
-test_image = (np.random.rand(500, 500) * 255).astype(np.uint8)
+import settings
 
 
 class App(QMainWindow):
@@ -38,17 +37,12 @@ class App(QMainWindow):
         font.setBold(True)
         self.graphWidget.getAxis("bottom").setTickFont(font)
 
-        # qImg = QImage(test_image, test_image.shape[0], test_image.shape[1], QImage.Format_Grayscale8)
-        # pixmap01 = QPixmap.fromImage(qImg)
-        # self.textLabel.setPixmap(pixmap01)
-
-        button = QPushButton("PyQt5 button", self)
-        button.setToolTip("This is an example button")
+        button = QPushButton("Start button", self)
         button.move(2, 2)
         button.clicked.connect(self.on_click)
 
         self.thread = QThread()
-        self.worker = playrec_worker.PlayRecWorker(timewindow=1)
+        self.worker = playrec_worker.PlayRecWorker(timewindow=settings.timewindow, fs=settings.fs)
         self.chirp = self.worker.chirp.copy()
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.start)
@@ -61,16 +55,12 @@ class App(QMainWindow):
 
     def echoreceived(self, recording):
         c = np.abs(np.convolve(recording, self.chirp))
-        c = c[: int(self.worker.fs * 60 / 343)]
-        x = np.arange(0, len(c)) * 343 / self.worker.fs
+        max_ix = int(settings.display_timewindow * settings.fs)
+        c = c[:max_ix]
+        x = np.arange(0, max_ix) * settings.meters_per_second / settings.fs
         ix = np.argmax(c)
         print(f"{ix}frames\t{x[ix]}m")
-
         self.line_data.setData(x, c)
-        # test_image[100, :] = c[0:500] * 255
-        # qImg = QImage(test_image, test_image.shape[0], test_image.shape[1], QImage.Format_Grayscale8)
-        # pixmap01 = QPixmap.fromImage(qImg)
-        # self.textLabel.setPixmap(pixmap01)
 
     @pyqtSlot()
     def on_click(self):
