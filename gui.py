@@ -1,20 +1,22 @@
 """
     Borehole echo gui
+    
+    This is the main GUI for the borehole echo depth sounder
+
     Aslak Grinsted 2022
+
+
 """
 import sys
 
 import numpy as np
-import sounddevice as sd
-import soundfile as sf
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot, Qt
-from PyQt5.QtGui import QIcon, QImage, QPixmap, QFont
-from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QWidget, QMainWindow
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
-from PyQt5.QtWidgets import QSplitter, QTextEdit, QLineEdit
+import pyqtgraph as pg
+from PyQt5.QtCore import QObject, Qt, QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QFont, QIcon, QImage, QPixmap
+from PyQt5.QtWidgets import QApplication, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QPushButton
+from PyQt5.QtWidgets import QSplitter, QTextEdit, QVBoxLayout, QWidget, QSizePolicy
 
 import playrec_worker
-import pyqtgraph as pg
 import settings
 
 
@@ -49,18 +51,27 @@ class App(QMainWindow):
         self.imageWidget.invertY(True)
         self.imageWidget.setYLink(self.graphWidget)
 
-        button = QPushButton("Start button", self)
-        button.move(2, 2)
-        button.clicked.connect(self.on_click)
-
         self.Hsplitter = QSplitter(Qt.Horizontal)
         # self.Hsplitter.addWidget(button)
         self.Hsplitter.addWidget(self.imageWidget)
         self.Hsplitter.addWidget(self.graphWidget)
+        self.Hsplitter.setStretchFactor(0, 5)
+        self.Hsplitter.setStretchFactor(1, 1)
+        self.Hsplitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.button = QPushButton("Start button", self)  # make it start and stop.
+        self.button.setCheckable(True)
+        self.button.clicked.connect(self.on_click)
+        self.button.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+
+        self.hbox = QHBoxLayout(self)
+        self.label = QLabel()
+        self.hbox.addWidget(self.button)  # bottom
+        self.hbox.addWidget(self.label)  # bottom
 
         self.vbox = QVBoxLayout(self)
         self.vbox.addWidget(self.Hsplitter)  # top
-        self.vbox.addWidget(button)  # bottom
+        self.vbox.addLayout(self.hbox)  # bottom
         widget = QWidget()
         widget.setLayout(self.vbox)
         self.setCentralWidget(widget)
@@ -75,17 +86,18 @@ class App(QMainWindow):
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.echoreceived.connect(self.echoreceived)
-
+        self.thread.start()
         self.show()
 
     def echoreceived(self, recording):
-        c = np.abs(np.convolve(recording, self.chirp))
+        c = np.abs(np.convolve(recording, np.flip(self.chirp), "valid"))
         max_ix = int(settings.display_timewindow * settings.fs)
         c = c[:max_ix]
         c = c / np.max(c)
         z = np.arange(0, max_ix) * settings.meters_per_second / settings.fs
         ix = np.argmax(c)
-        print(f"{ix}frames\t{z[ix]}m")
+        print(f"{ix}frames\t{z[ix]:.2f}m")
+        self.label.setText(f"{z[ix]:.2f}m")
         self.line_data.setData(c, z)
         if len(c) > self.image.shape[0]:
             self.image = np.zeros((len(c), 500))
@@ -93,12 +105,15 @@ class App(QMainWindow):
         self.image[:, -1] = c
         self.imageItem.setImage(self.image, autoLevels=False)
         self.imageItem.setRect(0, z[0], self.image.shape[1] * settings.timewindow, z[-1] - z[0])
-        print(len(c))
 
     @pyqtSlot()
     def on_click(self):
-        self.thread.start()
-        print("PyQt5 button click")
+        if self.button.isChecked():
+            self.worker.stop()
+            self.button.setText("Press to Start.")
+        else:
+            self.worker.start()
+            self.button.setText("Press to Stop.")
 
 
 if __name__ == "__main__":

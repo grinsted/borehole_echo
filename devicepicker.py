@@ -1,3 +1,12 @@
+"""\
+
+This script is currently unused! 
+
+
+The intent of it was to make a settings window where you could select the sound device you want to use. 
+
+"""
+
 import sys
 
 import numpy as np

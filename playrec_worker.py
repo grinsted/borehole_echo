@@ -1,12 +1,27 @@
+"""
+    A QT worker that plays a chirp and records the echo.
+
+    It works by having a fixed circular play and record buffer.
+
+    When the recording buffer loops then it triggers a callback.
+    (takes into account the latency reported by the system.).
+
+    The two buffers have equal length. The play-buffer is mostly 
+    silent except for a short chirp in the beginning. 
+
+    Aslak Grinsted 2022
+"""
+
 import atexit
 
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
 from PyQt5.QtCore import QObject, pyqtSignal
+import settings
 
 
-def chirp(tmax=0.005, f1=22000, f2=1000, fs=44100):
+def chirp(tmax=0.035, f1=22000, f2=1000, fs=44100):
     f = np.exp(np.linspace(np.log(2 * np.pi * f1 / fs), np.log(2 * np.pi * f2 / fs), int(tmax * fs)))
     phase = np.cumsum(f)
     amp = np.tanh(np.sin(np.linspace(0, np.pi, len(f))) * 10)
@@ -39,17 +54,15 @@ class PlayRecWorker(QObject):
         self.stop()
         self.stream = sd.Stream(samplerate=self.fs, channels=1, callback=self.stream_callback, latency="low")  # , device=("FocusRite", "Speaker/HP"))
         total_latency = np.sum(np.array(self.stream.latency))
-        print(total_latency * self.fs)
         self.play_position = 0
         self.rec_position = -int(total_latency * self.fs) % len(self.recordbuffer)
-        print(self.rec_position)
         self.stream.start()
 
     def stop(self):
         if self.stream:
             self.stream.stop()
+            self.stream.close()
             self.stream = None
-            self.finished.emit()
 
     def stream_callback(self, indata, outdata, frames, time, status):
         indata = indata.ravel()
