@@ -59,7 +59,7 @@ class App(QMainWindow):
         self.Hsplitter.setStretchFactor(1, 1)
         self.Hsplitter.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.button = QPushButton("Start button", self)  # make it start and stop.
+        self.button = QPushButton("Press to Pause.", self)  # make it start and stop.
         self.button.setCheckable(True)
         self.button.clicked.connect(self.on_click)
         self.button.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
@@ -113,7 +113,7 @@ class App(QMainWindow):
             self.button.setText("Press to Start.")
         else:
             self.worker.start()
-            self.button.setText("Press to Stop.")
+            self.button.setText("Press to Pause.")
 
 
 if __name__ == "__main__":

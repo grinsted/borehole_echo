@@ -4,6 +4,8 @@ This script is currently unused!
 
 
 The intent of it was to make a settings window where you could select the sound device you want to use. 
+I've decided against it because i feel like it is more desirable to have a simpler code base. 
+
 
 """
 

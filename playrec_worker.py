@@ -22,6 +22,16 @@ import settings
 
 
 def chirp(tmax=0.035, f1=22000, f2=1000, fs=44100):
+    """
+    generates a chirp waveform. (it is time reversed because that sounds better.)
+
+    Currently it generates a complex numbered waveform.
+    - The real part should be played.
+    - The echo can be correlated with the either the real part or the full complex waveform.
+      (If the complex waveform is used then we can measure the phase shift of the returned echo.
+      But we dont expect a phase shift, and in that case maybe only the real part is needed.)
+
+    """
     f = np.exp(np.linspace(np.log(2 * np.pi * f1 / fs), np.log(2 * np.pi * f2 / fs), int(tmax * fs)))
     phase = np.cumsum(f)
     amp = np.tanh(np.sin(np.linspace(0, np.pi, len(f))) * 10)
@@ -52,7 +62,9 @@ class PlayRecWorker(QObject):
 
     def start(self):
         self.stop()
-        self.stream = sd.Stream(samplerate=self.fs, channels=1, callback=self.stream_callback, latency="low")  # , device=("FocusRite", "Speaker/HP"))
+        self.stream = sd.Stream(
+            samplerate=self.fs, channels=1, callback=self.stream_callback, latency="low", device=(settings.inputdevice, settings.outputdevice)
+        )
         total_latency = np.sum(np.array(self.stream.latency))
         self.play_position = 0
         self.rec_position = -int(total_latency * self.fs) % len(self.recordbuffer)

@@ -14,14 +14,16 @@ At EastGRIP we want to sense the liquid level in the borehole using sound. This 
 
 * gui.py: the main file with the GUI.
 * playrec_worker.py: a worker that plays and records chirps.
-* settings.py: settings 
-* list_sounddevices.py: prints out the names and details of all the sounddevices connected to the system. 
+* settings.py: misc settings 
+* find_sounddevices.py: used to find the first/best matching device from a prioritized list of device names. 
 
 
 # TODO:
 
 * record all inputs to a file. 
-* respect input/output device names when starting playrec_worker. Should it fallback to default devices (?), should it allow regexps?
+    - Ideally compressed in some way. I've not found nice simple libraries to deal with infinite streams. We could use subprocess to pipe into ffmpeg (like i use for dailyglacier videos)?
+
+
 
 
 

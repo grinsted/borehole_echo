@@ -1,12 +1,18 @@
 import numpy as np
+from find_sounddevice import choose_device
 
+# prioritized lists of preferred devices...
+inputdevice = ["focusrite", "default"]
+outputdevice = ["focusrite", "default"]
 
-inputdevice = None  # not in use yet... 
-outputdevice = None  # not in use yet...
+# select the first matching device
+inputdevice = choose_device(inputdevice, kind="input")["fullname"]
 
-
-fs = 44100 #sample rate...
-timewindow = 0.5  # time between chirps
+outputdevice = choose_device(outputdevice, kind="output")["fullname"]
+print(inputdevice)
+print(outputdevice)
+fs = 44100  # sample rate...
+timewindow = 0.5  # time between chirps (SHOULD be ~2secs )
 
 
 def soundspeed(T):
