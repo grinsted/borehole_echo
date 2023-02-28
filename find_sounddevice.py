@@ -46,8 +46,7 @@ def choose_device(device_priority_list=["default"], kind="output"):
 
 
 if __name__ == "__main__":
-
-    1 / 0
+    # test code. When you run it like this then you should get a list of device names....
     try:
         choose_device(device_priority_list=[], kind="output")
     except:

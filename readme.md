@@ -19,13 +19,14 @@ At EastGRIP we want to sense the liquid level in the borehole using sound. This 
 
 
 
+
 # TODO:
 
 * record all inputs to a file. Ideally compressed in some way. I've not found nice simple libraries to deal with infinite streams. We could use subprocess to pipe into ffmpeg (like i use for dailyglacier videos)?
+  - in the currently_unused_code/stream_encoder.py i have a little test showing how you can pipe data to ffmpeg and it will encode it as an ogg file. This functionality should probably be encapsulated in a separate worker thread so that it does not interfere with the GUI too much. 
 
 
 
 
 
-
-Aslak Grinsted 2022
+Aslak Grinsted 2023
