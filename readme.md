@@ -13,15 +13,16 @@ At EastGRIP we want to sense the liquid level in the borehole using sound. This 
 # files
 
 * gui.py: the main file with the GUI.
-* playrec_worker.py: a worker that plays and records chirps.
+* playrec_worker.py: a worker that plays and records chirps. This will run it is own thread and trigger pyqtsignals to 
 * settings.py: misc settings 
 * find_sounddevices.py: used to find the first/best matching device from a prioritized list of device names. 
 
 
+
 # TODO:
 
-* record all inputs to a file. 
-    - Ideally compressed in some way. I've not found nice simple libraries to deal with infinite streams. We could use subprocess to pipe into ffmpeg (like i use for dailyglacier videos)?
+* record all inputs to a file. Ideally compressed in some way. I've not found nice simple libraries to deal with infinite streams. We could use subprocess to pipe into ffmpeg (like i use for dailyglacier videos)?
+
 
 
 
