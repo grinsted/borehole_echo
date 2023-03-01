@@ -2,8 +2,8 @@ import numpy as np
 from find_sounddevice import choose_device
 
 # prioritized lists of preferred devices...
-inputdevice = ["focusrite", "default"]
-outputdevice = ["focusrite", "default"]
+inputdevice = ["Analogue 1 + 2 (wc4800_8210), Windows WDM-KS", "focusrite", "default"]  # be more specific about the focusrite name
+outputdevice = ["Speakers (wr4800_8210), Windows WDM-KS", "focusrite", "default"]
 
 # select the first matching device
 inputdevice = choose_device(inputdevice, kind="input")["fullname"]
