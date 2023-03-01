@@ -78,14 +78,14 @@ class App(QMainWindow):
 
         # ------- setup play rec worker --------
         self.thread = QThread()
-        self.worker = playrec_worker.PlayRecWorker(timewindow=settings.timewindow, fs=settings.fs)
-        self.chirp = self.worker.chirp.copy()
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.start)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
+        self.audioworker = playrec_worker.PlayRecWorker(timewindow=settings.timewindow, fs=settings.fs)
+        self.chirp = self.audioworker.chirp.copy()
+        self.audioworker.moveToThread(self.thread)
+        self.thread.started.connect(self.audioworker.start)
+        self.audioworker.finished.connect(self.thread.quit)
+        self.audioworker.finished.connect(self.audioworker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        self.worker.echoreceived.connect(self.echoreceived)
+        self.audioworker.echoreceived.connect(self.echoreceived)
         self.thread.start()
         self.show()
 
@@ -109,10 +109,10 @@ class App(QMainWindow):
     @pyqtSlot()
     def on_click(self):
         if self.button.isChecked():
-            self.worker.stop()
+            self.audioworker.stop()
             self.button.setText("Press to Start.")
         else:
-            self.worker.start()
+            self.audioworker.start()
             self.button.setText("Press to Pause.")
 
 

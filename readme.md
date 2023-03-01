@@ -26,6 +26,7 @@ At EastGRIP we want to sense the liquid level in the borehole using sound. This 
 * move more options (like chirp settings) to settings.py
 
 
+![Screenshot 2023-03-01](assets/screenshot_20230301.png)
 
 
 Aslak Grinsted 2023
