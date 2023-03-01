@@ -12,11 +12,9 @@ At EastGRIP we want to sense the liquid level in the borehole using sound. This 
 
 
 ## dependencies
-* numpy
-* pyqt (5?)
-* pyqtgraph
-* sounddevice
-* ???? (maybe an ffmpeg executable for stream recording.)
+numpy, pyqt, pyqtgraph, sounddevice
+
+... and perhaps an ffmpeg executable for stream recording (not yet implemented).
 
 
 

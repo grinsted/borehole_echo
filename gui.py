@@ -3,7 +3,7 @@
     
     This is the main GUI for the borehole echo depth sounder
 
-    Aslak Grinsted 2022
+    Aslak Grinsted 2023
 
 
 """
