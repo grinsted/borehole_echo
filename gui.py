@@ -1,6 +1,6 @@
 """
     Borehole echo gui
-    
+
     This is the main GUI for the borehole echo depth sounder
 
     Aslak Grinsted 2023
@@ -18,6 +18,11 @@ from PyQt5.QtWidgets import QSplitter, QTextEdit, QVBoxLayout, QWidget, QSizePol
 
 import playrec_worker
 import settings
+from scipy.signal import find_peaks
+
+import logging
+
+logging.basicConfig(filename=r"boreholeechos.log", filemode="a", format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO, force=True)
 
 
 class App(QMainWindow):
@@ -90,14 +95,23 @@ class App(QMainWindow):
         self.show()
 
     def echoreceived(self, recording):
-        c = np.abs(np.convolve(recording, np.flip(self.chirp), "valid"))
+        # c = np.abs(np.convolve(recording, np.flip(self.chirp), "valid"))  # use complex chirp to find phase of match.
+        c = np.convolve(recording, np.flip(np.real(self.chirp)), "valid")  # insist on phase match
+        # discard all data after the max displayed timewindow.
         max_ix = int(settings.display_timewindow * settings.fs)
         c = c[:max_ix]
+        # Normalize returned echo with respect to highest peak
         c = c / np.max(c)
+        # make a z-vector for each sample
         z = np.arange(0, max_ix) * settings.meters_per_second / settings.fs
-        ix = np.argmax(c)
-        print(f"{ix}frames\t{z[ix]:.2f}m")
-        self.label.setText(f"{z[ix]:.2f}m")
+        # try to find peaks. Require a peak separation distance of atleast 5meters.
+        peaks, _ = find_peaks(c, distance=settings.fs * 5.0 / settings.meters_per_second, height=0.3)
+        # require a min peak distance of 2m
+        z = z - z[peaks[0]]
+        if len(peaks) > 1:
+            echodepth = z[peaks[1]]
+            self.label.setText(f"{echodepth:.2f}m")
+            logging.info(f"echodepth={echodepth:2f}")
         self.line_data.setData(c, z)
         if len(c) > self.image.shape[0]:
             self.image = np.zeros((len(c), 500))

@@ -2,17 +2,16 @@ import numpy as np
 from find_sounddevice import choose_device
 
 # prioritized lists of preferred devices...
-inputdevice = ["Analogue 1 + 2 (wc4800_8210), Windows WDM-KS", "focusrite", "default"]  # be more specific about the focusrite name
+inputdevice = ["Analogue 1 + 2 (wc4800_8210), Windows WDM-KS", "focusrite", "default"]
 outputdevice = ["Speakers (wr4800_8210), Windows WDM-KS", "focusrite", "default"]
 
 # select the first matching device
 inputdevice = choose_device(inputdevice, kind="input")["fullname"]
-
 outputdevice = choose_device(outputdevice, kind="output")["fullname"]
 print(inputdevice)
 print(outputdevice)
 fs = 44100  # sample rate...
-timewindow = 0.5  # time between chirps (SHOULD be ~2secs )
+timewindow = 0.5  # time between chirps (SHOULD probably be ~2secs to avoid multiples)
 
 
 def soundspeed(T):

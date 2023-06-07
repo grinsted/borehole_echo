@@ -7,7 +7,7 @@
     (takes into account the latency reported by the system.).
 
     The two buffers have equal length. The play-buffer is mostly 
-    silent except for a short chirp in the beginning. 
+    silent except for a short chirp in the beginning.
 
     Aslak Grinsted 2022
 """
@@ -16,7 +16,6 @@ import atexit
 
 import numpy as np
 import sounddevice as sd
-import soundfile as sf
 from PyQt5.QtCore import QObject, pyqtSignal
 import settings
 
@@ -63,7 +62,8 @@ class PlayRecWorker(QObject):
     def start(self):
         self.stop()
         self.stream = sd.Stream(
-            samplerate=self.fs, channels=1, callback=self.stream_callback, latency="low", device=(settings.inputdevice, settings.outputdevice)
+            samplerate=self.fs, channels=1, callback=self.stream_callback, 
+            latency="low", device=(settings.inputdevice, settings.outputdevice)
         )
         total_latency = np.sum(np.array(self.stream.latency))
         self.play_position = 0
