@@ -95,8 +95,8 @@ class App(QMainWindow):
         self.show()
 
     def echoreceived(self, recording):
-        # c = np.abs(np.convolve(recording, np.flip(self.chirp), "valid"))  # use complex chirp to find phase of match.
-        c = np.convolve(recording, np.flip(np.real(self.chirp)), "valid")  # insist on phase match
+        c = np.abs(np.convolve(recording, np.flip(self.chirp), "valid"))  # use complex chirp to find phase of match.
+        # c = np.convolve(recording, np.flip(np.real(self.chirp)), "valid")  # insist on phase match
         # discard all data after the max displayed timewindow.
         max_ix = int(settings.display_timewindow * settings.fs)
         c = c[:max_ix]
@@ -107,7 +107,7 @@ class App(QMainWindow):
         # try to find peaks. Require a peak separation distance of atleast 5meters.
         peaks, _ = find_peaks(c, distance=settings.fs * 5.0 / settings.meters_per_second, height=0.3)
         # require a min peak distance of 2m
-        z = z - z[peaks[0]]
+        z = z - z[peaks[0]]  # find first peak and subtract that from z.
         if len(peaks) > 1:
             echodepth = z[peaks[1]]
             self.label.setText(f"{echodepth:.2f}m")
