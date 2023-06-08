@@ -82,6 +82,7 @@ class App(QMainWindow):
         self.setCentralWidget(widget)
 
         # ------- setup play rec worker --------
+        # this runs in a separate thread but uses "echoreceived" as a threadsafe callback
         self.thread = QThread()
         self.audioworker = playrec_worker.PlayRecWorker(timewindow=settings.timewindow, fs=settings.fs)
         self.chirp = self.audioworker.chirp.copy()
@@ -105,13 +106,18 @@ class App(QMainWindow):
         # make a z-vector for each sample
         z = np.arange(0, max_ix) * settings.meters_per_second / settings.fs
         # try to find peaks. Require a peak separation distance of atleast 5meters.
-        peaks, _ = find_peaks(c, distance=settings.fs * 5.0 / settings.meters_per_second, height=0.3)
+        peaks, peakproperties = find_peaks(c, distance=settings.fs * 5.0 / settings.meters_per_second, height=0.3)
         # require a min peak distance of 2m
-        z = z - z[peaks[0]]  # find first peak and subtract that from z.
-        if len(peaks) > 1:
+        sortedix = np.argsort(-peakproperties["peak_heights"])
+        peaks = peaks[sortedix]
+        z = z - z[peaks[0]]  # use largest peak to find z-offset. (Could also be a constant in settings)
+        if (len(peaks) > 1) and (peaks[1] > peaks[0]):
+            # assume second largest peak is echo!
             echodepth = z[peaks[1]]
             self.label.setText(f"{echodepth:.2f}m")
-            logging.info(f"echodepth={echodepth:2f}")
+
+        logging.info(f"echodepth={echodepth:2f}")
+
         self.line_data.setData(c, z)
         if len(c) > self.image.shape[0]:
             self.image = np.zeros((len(c), 500))
