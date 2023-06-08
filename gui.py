@@ -55,6 +55,7 @@ class App(QMainWindow):
         self.imageWidget.getAxis("left").setTickFont(font)
         self.imageWidget.invertY(True)
         self.imageWidget.setYLink(self.graphWidget)
+        self.imageWidget.setMouseEnabled(x=False)
 
         self.Hsplitter = QSplitter(Qt.Horizontal)
         # self.Hsplitter.addWidget(button)
@@ -98,6 +99,7 @@ class App(QMainWindow):
     def echoreceived(self, recording):
         c = np.abs(np.convolve(recording, np.flip(self.chirp), "valid"))  # use complex chirp to find phase of match.
         # c = np.convolve(recording, np.flip(np.real(self.chirp)), "valid")  # insist on phase match
+        # c = c * (c > 0)
         # discard all data after the max displayed timewindow.
         max_ix = int(settings.display_timewindow * settings.fs)
         c = c[:max_ix]
@@ -106,18 +108,16 @@ class App(QMainWindow):
         # make a z-vector for each sample
         z = np.arange(0, max_ix) * settings.meters_per_second / settings.fs
         # try to find peaks. Require a peak separation distance of atleast 5meters.
-        peaks, peakproperties = find_peaks(c, distance=settings.fs * 5.0 / settings.meters_per_second, height=0.3)
-        # require a min peak distance of 2m
-        sortedix = np.argsort(-peakproperties["peak_heights"])
+        peaks, _ = find_peaks(c, distance=settings.fs * 5.0 / settings.meters_per_second, height=0.3)
+        sortedix = np.argsort(-c[peaks])
         peaks = peaks[sortedix]
-        z = z - z[peaks[0]]  # use largest peak to find z-offset. (Could also be a constant in settings)
         if (len(peaks) > 1) and (peaks[1] > peaks[0]):
             # assume second largest peak is echo!
             echodepth = z[peaks[1]]
             self.label.setText(f"{echodepth:.2f}m")
-
-        logging.info(f"echodepth={echodepth:2f}")
-
+            # log the N largest peaks to file
+            logging.info(f"echopeaks: " + np.array2string(z[peaks[:8]], formatter={"float_kind": lambda x: "%.2f" % x}))
+        z = z - z[peaks[0]]  # use largest peak to find z-offset. (It may be better to use a new latency_compensation constant in settings.py)
         self.line_data.setData(c, z)
         if len(c) > self.image.shape[0]:
             self.image = np.zeros((len(c), 500))
